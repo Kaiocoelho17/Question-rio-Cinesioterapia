@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionário - Rumo à Academia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        .bg-gym { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80') center/cover no-repeat; }
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
+        .particle { position: absolute; width: 3px; height: 3px; background: #00ff88; border-radius: 50%; opacity: 0; animation: floatParticle 8s infinite; }
+        @keyframes floatParticle { 0% { opacity: 0; transform: translateY(100vh) scale(0); } 10% { opacity: 0.3; } 90% { opacity: 0.1; } 100% { opacity: 0; transform: translateY(-10vh) scale(1); } }
+        .container { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; padding: 40px 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
+        .header { text-align: center; margin-bottom: 50px; animation: fadeInDown 0.8s ease-out; }
+        .header .icon { font-size: 60px; margin-bottom: 20px; display: block; filter: drop-shadow(0 0 30px rgba(0,255,136,0.6)); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .header h1 { font-size: 2.8rem; font-weight: 800; color: #fff; letter-spacing: -2px; margin-bottom: 10px; }
+        .header h1 span { color: #00ff88; text-shadow: 0 0 40px rgba(0,255,136,0.5); }
+        .header p { font-size: 1rem; color: #888; font-weight: 300; letter-spacing: 1px; }
+        
+        .progress-container { width: 100%; max-width: 600px; height: 4px; background: #1a1a1a; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #00ff88, #00cc6a); border-radius: 10px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 15px rgba(0,255,136,0.4); }
+        .progress-text { text-align: right; font-size: 0.75rem; color: #555; margin-bottom: 30px; width: 100%; max-width: 600px; }
+        
+        .personal-card, .question-card { background: rgba(15,15,15,0.95); border: 1px solid #222; border-radius: 20px; padding: 40px; width: 100%; max-width: 600px; margin-bottom: 25px; animation: slideIn 0.5s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; backdrop-filter: blur(10px); }
+        .personal-card::before, .question-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #00ff88, transparent); }
+        .question-card { display: none; }
+        .question-card.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .card-title { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .card-title .icon-circle { width: 50px; height: 50px; background: linear-gradient(135deg, #00ff88, #00cc6a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 25px rgba(0,255,136,0.3); }
+        .card-title h2 { font-size: 1.5rem; font-weight: 600; color: #e0e0e0; }
+        .card-title p { font-size: 0.8rem; color: #666; margin-top: 3px; }
+        
+        .question-number { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; border-radius: 50%; font-weight: 700; font-size: 1rem; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+        .question-text { font-size: 1.2rem; font-weight: 500; color: #e0e0e0; margin-bottom: 25px; line-height: 1.5; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { display: flex; align-items: center; gap: 15px; padding: 16px 20px; background: rgba(10,10,10,0.8); border: 1px solid #2a2a2a; border-radius: 12px; cursor: pointer; transition: all 0.3s; color: #ccc; font-size: 0.95rem; font-weight: 400; position: relative; overflow: hidden; }
+        .option-btn::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 0; background: linear-gradient(90deg, rgba(0,255,136,0.1), transparent); transition: width 0.3s; }
+        .option-btn:hover { border-color: #00ff88; color: #00ff88; transform: translateX(5px); box-shadow: 0 0 20px rgba(0,255,136,0.1); }
+        .option-btn:hover::before { width: 100%; }
+        .option-btn.selected { background: linear-gradient(135deg, rgba(13,40,24,0.9), rgba(10,31,19,0.9)); border-color: #00ff88; color: #00ff88; box-shadow: 0 0 25px rgba(0,255,136,0.2); transform: translateX(5px); }
+        .option-btn .radio { width: 20px; height: 20px; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s; flex-shrink: 0; }
+        .option-btn.selected .radio { border-color: #00ff88; background: #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.5); }
+        .option-btn.selected .radio::after { content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
+        .option-btn .text { position: relative; z-index: 1; }
+        
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 20px; gap: 15px; width: 100%; max-width: 600px; }
+        .nav-btn { padding: 14px 35px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; }
+        .btn-prev { background: transparent; border: 1px solid #333; color: #888; }
+        .btn-prev:hover { border-color: #666; color: #fff; }
+        .btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-next { background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; box-shadow: 0 5px 25px rgba(0,255,136,0.3); flex-grow: 1; max-width: 200px; }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 35px rgba(0,255,136,0.4); }
+        
+        .results-container { display: none; animation: fadeIn 0.8s ease-out; width: 100%; max-width: 700px; }
+        .results-container.active { display: block; }
+        .results-header { text-align: center; margin-bottom: 35px; }
+        .results-header h2 { font-size: 2rem; color: #00ff88; margin-bottom: 10px; text-shadow: 0 0 30px rgba(0,255,136,0.4); }
+        .results-header p { color: #888; font-size: 0.95rem; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; width: 100%; }
+        .stat-card { background: rgba(15,15,15,0.95); border: 1px solid #222; border-radius: 16px; padding: 20px 15px; text-align: center; transition: all 0.3s; }
+        .stat-card:hover { border-color: #00ff88; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,136,0.1); }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #00ff88; }
+        .stat-label { font-size: 0.7rem; color: #666; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .profile-card { background: rgba(15,15,15,0.95); border: 1px solid #222; border-radius: 24px; overflow: hidden; margin-bottom: 30px; transition: all 0.3s; width: 100%; }
+        .profile-card:hover { border-color: #333; }
+        .profile-card-top { background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,255,136,0.05)); padding: 30px; text-align: center; border-bottom: 1px solid #222; position: relative; }
+        .profile-card-top::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, #00ff88, transparent); }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00ff88, #00cc6a); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; color: #000; box-shadow: 0 0 30px rgba(0,255,136,0.3); position: relative; }
+        .profile-avatar .online-dot { position: absolute; bottom: 5px; right: 5px; width: 14px; height: 14px; background: #00ff88; border-radius: 50%; border: 3px solid #0f0f0f; }
+        .profile-name { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .profile-subtitle { font-size: 0.8rem; color: #00ff88; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
+        .profile-card-body { padding: 25px 30px 30px; }
+        .profile-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .profile-info-item { text-align: center; padding: 18px 10px; background: rgba(10,10,10,0.8); border-radius: 14px; border: 1px solid #1a1a1a; }
+        .profile-info-item .info-icon { font-size: 24px; margin-bottom: 8px; }
+        .profile-info-item .info-value { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 3px; }
+        .profile-info-item .info-label { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .profile-divider { height: 1px; background: linear-gradient(90deg, transparent, #333, transparent); margin: 20px 0; }
+        .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .profile-tag { padding: 6px 14px; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.15); border-radius: 20px; font-size: 0.75rem; color: #00ff88; font-weight: 500; }
+        .profile-tag.negative { background: rgba(255,80,80,0.08); border-color: rgba(255,80,80,0.15); color: #ff5050; }
+        
+        /* Mensagem de Agradecimento */
+        .thank-you-msg {
+            background: rgba(0, 255, 136, 0.03);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .thank-you-msg .ty-title { font-size: 1.25rem; font-weight: 700; color: #00ff88; margin-bottom: 8px; }
+        .thank-you-msg .ty-text { font-size: 0.9rem; color: #999; line-height: 1.5; }
+        
+        .btn-restart { display: block; width: 100%; max-width: 600px; padding: 18px; background: linear-gradient(135deg, #00ff88, #00cc6a); color: #000; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; box-shadow: 0 5px 25px rgba(0,255,136,0.3); margin: 0 auto; }
+        .btn-restart:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,255,136,0.4); }
+        .confetti { position: fixed; top: -10px; z-index: 100; animation: confettiFall 3s ease-out forwards; }
+        @keyframes confettiFall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; color: #888; margin-bottom: 8px; font-weight: 500; letter-spacing: 0.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 14px 18px; background: rgba(10,10,10,0.8); border: 1px solid #2a2a2a; border-radius: 12px; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; transition: all 0.3s; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.1); }
+        .form-group input::placeholder { color: #444; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2300ff88' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 18px center; cursor: pointer; }
+        .form-group select option { background: #111; color: #fff; }
+        
+        @media (max-width: 600px) {
+            .container { padding: 30px 15px; }
+            .header h1 { font-size: 2rem; }
+            .personal-card, .question-card { padding: 30px 20px; }
+            .question-text { font-size: 1.05rem; }
+            .option-btn { padding: 14px 16px; font-size: 0.9rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .profile-info-grid { grid-template-columns: 1fr 1fr; }
+            .profile-card-body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gym"></div>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <!-- TELA INICIAL -->
+        <div class="header">
+            <span class="icon">🏋️</span>
+            <h1>Rumo à <span>Academia</span></h1>
+            <p>Questionário sobre prevenção de lesões no joelho</p>
+        </div>
+        
+        <div class="progress-container"><div class="progress-bar" id="progressBar" style="width:12.5%"></div></div>
+        <div class="progress-text" id="progressText">Dados Pessoais</div>
+
+        <!-- DADOS PESSOAIS -->
+        <div class="personal-card" id="personalCard">
+            <div class="card-title">
+                <div class="icon-circle">👤</div>
+                <div><h2>Seus Dados</h2><p>Preencha suas informações antes de começar</p></div>
+            </div>
+            <div class="form-group"><label>Seu Nome</label><input type="text" id="inputNome" placeholder="Digite seu nome completo" autocomplete="off"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Idade</label><input type="number" id="inputIdade" placeholder="Ex: 25" min="10" max="100"></div>
+                <div class="form-group"><label>Tempo de Treino</label>
+                    <select id="inputTempo">
+                        <option value="" disabled selected>Selecione</option>
+                        <option value="Menos de 6 meses">Menos de 6 meses</option>
+                        <option value="6 meses a 1 ano">6 meses a 1 ano</option>
+                        <option value="1 a 2 anos">1 a 2 anos</option>
+                        <option value="2 a 5 anos">2 a 5 anos</option>
+                        <option value="Mais de 5 anos">Mais de 5 anos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERGUNTAS (ESCONDIDAS INICIALMENTE) -->
+        <div class="question-card" data-question="1"><div class="question-number">1</div><div class="question-text">Você realiza aquecimento antes do treino?</div><div class="options"><div class="option-btn" onclick="selectOption(this,1)"><div class="radio"></div><span class="text">Sempre</span></div><div class="option-btn" onclick="selectOption(this,1)"><div class="radio"></div><span class="text">Às vezes</span></div><div class="option-btn" onclick="selectOption(this,1)"><div class="radio"></div><span class="text">Nunca</span></div></div></div>
+        
+        <div class="question-card" data-question="2"><div class="question-number">2</div><div class="question-text">Você já sofreu alguma lesão no joelho anteriormente?</div><div class="options"><div class="option-btn" onclick="selectOption(this,2)"><div class="radio"></div><span class="text">Sim</span></div><div class="option-btn" onclick="selectOption(this,2)"><div class="radio"></div><span class="text">Não</span></div></div></div>
+        
+        <div class="question-card" data-question="3"><div class="question-number">3</div><div class="question-text">Você recebe orientação profissional durante os exercícios?</div><div class="options"><div class="option-btn" onclick="selectOption(this,3)"><div class="radio"></div><span class="text">Sim</span></div><div class="option-btn" onclick="selectOption(this,3)"><div class="radio"></div><span class="text">Não</span></div></div></div>
+        
+        <div class="question-card" data-question="4"><div class="question-number">4</div><div class="question-text">Você sente estalos ou travamentos no joelho?</div><div class="options"><div class="option-btn" onclick="selectOption(this,4)"><div class="radio"></div><span class="text">Sim</span></div><div class="option-btn" onclick="selectOption(this,4)"><div class="radio"></div><span class="text">Não</span></div></div></div>
+        
+        <div class="question-card" data-question="5"><div class="question-number">5</div><div class="question-text">Qual destes cuidados você considera mais importante para prevenir lesões no joelho?</div><div class="options"><div class="option-btn" onclick="selectOption(this,5)"><div class="radio"></div><span class="text">Aquecimento</span></div><div class="option-btn" onclick="selectOption(this,5)"><div class="radio"></div><span class="text">Alongamento</span></div><div class="option-btn" onclick="selectOption(this,5)"><div class="radio"></div><span class="text">Execução correta</span></div><div class="option-btn" onclick="selectOption(this,5)"><div class="radio"></div><span class="text">Fortalecimento muscular</span></div><div class="option-btn" onclick="selectOption(this,5)"><div class="radio"></div><span class="text">Descanso adequado</span></div></div></div>
+        
+        <div class="question-card" data-question="6"><div class="question-number">6</div><div class="question-text">Na sua opinião, qual fator é mais importante para evitar lesões no leg press?</div><div class="options"><div class="option-btn" onclick="selectOption(this,6)"><div class="radio"></div><span class="text">Amplitude correta</span></div><div class="option-btn" onclick="selectOption(this,6)"><div class="radio"></div><span class="text">Postura adequada</span></div><div class="option-btn" onclick="selectOption(this,6)"><div class="radio"></div><span class="text">Controle da carga</span></div><div class="option-btn" onclick="selectOption(this,6)"><div class="radio"></div><span class="text">Orientação profissional</span></div></div></div>
+        
+        <div class="question-card" data-question="7"><div class="question-number">7</div><div class="question-text">Você considera importante receber orientações fisioterapêuticas dentro da academia?</div><div class="options"><div class="option-btn" onclick="selectOption(this,7)"><div class="radio"></div><span class="text">Sim</span></div><div class="option-btn" onclick="selectOption(this,7)"><div class="radio"></div><span class="text">Não</span></div></div></div>
+
+        <div class="nav-buttons" id="navButtons">
+            <button class="nav-btn btn-prev" id="btnPrev" onclick="prevStep()" disabled>← Voltar</button>
+            <button class="nav-btn btn-next" id="btnNext" onclick="nextStep()">Começar →</button>
+        </div>
+
+        <!-- RESULTADOS (SEM RESUMO DAS RESPOSTAS) -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header"><h2>📋 Questionário Concluído</h2><p>Obrigado por responder! Veja seu resumo abaixo</p></div>
+            
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="profile-card" id="profileCard">
+                <div class="profile-card-top">
+                    <div class="profile-avatar" id="profileAvatar"><span id="avatarInitial">?</span><div class="online-dot"></div></div>
+                    <div class="profile-name" id="profileName">-</div>
+                    <div class="profile-subtitle">Ficha do Respondente</div>
+                </div>
+                <div class="profile-card-body">
+                    <div class="profile-info-grid">
+                        <div class="profile-info-item"><div class="info-icon">🎂</div><div class="info-value" id="profileIdade">-</div><div class="info-label">Idade</div></div>
+                        <div class="profile-info-item"><div class="info-icon">⏱️</div><div class="info-value" id="profileTempo">-</div><div class="info-label">Tempo de Treino</div></div>
+                        <div class="profile-info-item"><div class="info-icon">📝</div><div class="info-value">7/7</div><div class="info-label">Questões</div></div>
+                    </div>
+                    <div class="profile-divider"></div>
+                    <div class="profile-tags" id="profileTags"></div>
+                </div>
+            </div>
+            
+            <!-- MENSAGEM DE AGRADECIMENTO -->
+            <div class="thank-you-msg">
+                <div class="ty-title">🎓 Muito obrigado pela sua participação!</div>
+                <div class="ty-text">Suas respostas são fundamentais para esta pesquisa de fins acadêmicos e contribuirão diretamente para o estudo sobre prevenção de lesões na academia.</div>
+            </div>
+
+            <button class="btn-restart" onclick="restartQuiz()">🔄 Refazer Questionário</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://question-rio-cinesioterapia.onrender.com';
+        let currentStep = 0, totalSteps = 8;
+        const answers = {}, personalInfo = {};
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*8+'s';p.style.animationDuration=(6+Math.random()*4)+'s';container.appendChild(p);}
+        }
+        createParticles();
+
+        function selectOption(el, qn) {
+            el.closest('.question-card').querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+            el.classList.add('selected');
+            answers[qn] = el.querySelector('.text').textContent;
+            el.style.transform='translateX(12px) scale(0.98)';
+            setTimeout(()=>el.style.transform='translateX(8px)',150);
+        }
+
+        async function nextStep() {
+            if(currentStep===0){
+                const nome=document.getElementById('inputNome').value.trim(),
+                      idade=document.getElementById('inputIdade').value,
+                      tempo=document.getElementById('inputTempo').value;
+                if(!nome){shakeElement(document.getElementById('inputNome'));return;}
+                if(!idade){shakeElement(document.getElementById('inputIdade'));return;}
+                if(!tempo){shakeElement(document.getElementById('inputTempo'));return;}
+                
+                personalInfo.nome=nome;
+                personalInfo.idade=idade;
+                personalInfo.tempo=tempo;
+                
+                document.getElementById('personalCard').style.display='none';
+                document.querySelector('.question-card[data-question="1"]').classList.add('active');
+                currentStep=1;
+                updateProgress();
+                updateNavButtons();
+                return;
+            }
+            if(!answers[currentStep]){
+                const c=document.querySelector(`.question-card[data-question="${currentStep}"]`);
+                c.style.animation='shake 0.5s';
+                setTimeout(()=>c.style.animation='',500);
+                return;
+            }
+            if(currentStep<7){
+                document.querySelector(`.question-card[data-question="${currentStep}"]`).classList.remove('active');
+                currentStep++;
+                document.querySelector(`.question-card[data-question="${currentStep}"]`).classList.add('active');
+                updateProgress();
+                updateNavButtons();
+            } else await showResults();
+        }
+        
+        function prevStep(){
+            if(currentStep===1){
+                document.querySelector('.question-card[data-question="1"]').classList.remove('active');
+                document.getElementById('personalCard').style.display='block';
+                currentStep=0;
+            } else if(currentStep>1){
+                document.querySelector(`.question-card[data-question="${currentStep}"]`).classList.remove('active');
+                currentStep--;
+                document.querySelector(`.question-card[data-question="${currentStep}"]`).classList.add('active');
+            }
+            updateProgress();
+            updateNavButtons();
+        }
+        
+        function shakeElement(el){
+            el.style.animation='shake 0.5s';
+            el.style.borderColor='#ff5050';
+            setTimeout(()=>{el.style.animation='';el.style.borderColor='#2a2a2a';},500);
+        }
+        
+        function updateProgress(){
+            const s=currentStep===0?1:currentStep;
+            document.getElementById('progressBar').style.width=(s/totalSteps*100)+'%';
+            document.getElementById('progressText').textContent=currentStep===0?'Dados Pessoais':`Pergunta ${currentStep} de 7`;
+        }
+        
+        function updateNavButtons(){
+            document.getElementById('btnPrev').disabled=currentStep===0;
+            document.getElementById('btnNext').textContent=currentStep===0?'Começar →':currentStep===7?'📊 Ver Resultados':'Próxima →';
+        }
+
+        const style=document.createElement('style');
+        style.textContent=`@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-10px)}80%{transform:translateX(10px)}}`;
+        document.head.appendChild(style);
+
+        async function enviarParaBackend() {
+            console.log('📤 Enviando:', `${API_URL}/respostas`);
+            const payload = { nome: personalInfo.nome, idade: personalInfo.idade, tempo: personalInfo.tempo, respostas: {...answers}, timestamp: new Date().toISOString() };
+            try {
+                const res = await fetch(`${API_URL}/api/respostas`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                const result = await res.json();
+                if(!res.ok) throw new Error(result.error||'Erro');
+                console.log('✅ Salvo!', result); return true;
+            } catch(e) { console.error('❌ Erro:', e); alert('⚠️ Dados exibidos, mas não salvos no banco.'); return false; }
+        }
+
+        async function showResults() {
+            document.querySelector(`.question-card[data-question="${currentStep}"]`).classList.remove('active');
+            document.getElementById('navButtons').style.display='none';
+            document.getElementById('progressText').textContent='✅ Concluído!';
+            document.getElementById('progressBar').style.width='100%';
+            document.getElementById('progressBar').style.background='linear-gradient(90deg,#00ff88,#00ff88)';
+            const rc = document.getElementById('resultsContainer'); rc.classList.add('active'); createConfetti();
+
+            // Stats pessoais
+            const sg = document.getElementById('statsGrid'), sim = Object.values(answers).filter(a=>a==='Sim').length, nao = Object.values(answers).filter(a=>a==='Não').length;
+            sg.innerHTML = `<div class="stat-card"><div class="stat-value">${sim}</div><div class="stat-label">Suas "Sim"</div></div><div class="stat-card"><div class="stat-value">${nao}</div><div class="stat-label">Suas "Não"</div></div><div class="stat-card"><div class="stat-value">100%</div><div class="stat-label">Completado</div></div>`;
+
+            // Ficha
+            const nc = personalInfo.nome, iniciais = nc.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+            document.getElementById('avatarInitial').textContent=iniciais;
+            document.getElementById('profileName').textContent=nc;
+            document.getElementById('profileIdade').textContent=personalInfo.idade+' anos';
+            document.getElementById('profileTempo').textContent=personalInfo.tempo;
+            const tc = document.getElementById('profileTags'); tc.innerHTML='';
+            for(let i=1;i<=7;i++){
+                const t=document.createElement('span');
+                t.className='profile-tag'+(answers[i]==='Não'?' negative':'');
+                t.textContent=`Q${i}: ${answers[i]}`;
+                tc.appendChild(t);
+            }
+
+            await enviarParaBackend();
+        }
+
+        function createConfetti(){
+            for(let i=0;i<50;i++){
+                setTimeout(()=>{
+                    const c=document.createElement('div');
+                    c.className='confetti';
+                    c.style.left=Math.random()*100+'vw';
+                    c.style.background=['#00ff88','#00cc6a','#ffffff','#33ffaa'][Math.floor(Math.random()*4)];
+                    const sz=5+Math.random()*10;
+                    c.style.width=sz+'px';
+                    c.style.height=sz+'px';
+                    c.style.borderRadius=Math.random()>.5?'50%':'2px';
+                    c.style.animationDuration=(2+Math.random()*2)+'s';
+                    document.body.appendChild(c);
+                    setTimeout(()=>c.remove(),4000);
+                },i*50);
+            }
+        }
+
+        function restartQuiz(){
+            currentStep=0;
+            Object.keys(answers).forEach(k=>delete answers[k]);
+            document.getElementById('inputNome').value='';
+            document.getElementById('inputIdade').value='';
+            document.getElementById('inputTempo').selectedIndex=0;
+            document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+            document.querySelectorAll('.question-card').forEach(c=>c.classList.remove('active'));
+            document.getElementById('personalCard').style.display='block';
+            document.getElementById('resultsContainer').classList.remove('active');
+            document.getElementById('navButtons').style.display='flex';
+            document.getElementById('progressBar').style.width='12.5%';
+            document.getElementById('progressBar').style.background='linear-gradient(90deg,#00ff88,#00cc6a)';
+            updateProgress();
+            updateNavButtons();
+            window.scrollTo({top:0,behavior:'smooth'});
+        }
+    </script>
+</body>
+</html>
