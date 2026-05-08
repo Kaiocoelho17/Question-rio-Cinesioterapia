@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin - Questionário Academia</title>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: #050505; color: #eee; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1, h2 { color: #00ff88; text-align: center; margin-bottom: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 40px; }
+    .stat-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #00ff88; margin-bottom: 5px; }
+    .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+    .table-wrapper { overflow-x: auto; background: #111; border-radius: 12px; border: 1px solid #222; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
+    th { background: #0a1f13; color: #00ff88; position: sticky; top: 0; }
+    tr:hover { background: #1a1a1a; }
+    .tag-sim { color: #00ff88; font-weight: 600; }
+    .tag-nao { color: #ff5050; font-weight: 600; }
+    .loading { text-align: center; color: #666; padding: 40px; }
+    .refresh-btn { display: block; margin: 20px auto; padding: 12px 24px; background: #00ff88; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .refresh-btn:hover { background: #00cc6a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Painel de Resultados Gerais</h1>
+    <button class="refresh-btn" onclick="carregarDados()"> Atualizar Dados</button>
+    
+    <div id="stats" class="stats-grid"></div>
+    
+    <h2>📋 Respostas Coletadas</h2>
+    <div class="table-wrapper">
+      <table id="tabela-respostas">
+        <thead>
+          <tr>
+            <th>Nome</th><th>Idade</th><th>Tempo</th>
+            <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Q6</th><th>Q7</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-tabela"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://question-rio-cinesioterapia.onrender.com/api';
+
+    async function carregarDados() {
+      const statsDiv = document.getElementById('stats');
+      const tbody = document.getElementById('corpo-tabela');
+      
+      statsDiv.innerHTML = '<p class="loading">Carregando estatísticas...</p>';
+      tbody.innerHTML = '<tr><td colspan="10" class="loading">Carregando respostas...</td></tr>';
+
+      try {
+        // 1. Pega as médias/estatísticas
+        const statsRes = await fetch(`${API}/estatisticas`);
+        const { stats } = await statsRes.json();
+        
+        statsDiv.innerHTML = `
+          <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Total de Pessoas</div></div>
+          <div class="stat-card"><div class="stat-value">${stats.mediaIdade}</div><div class="stat-label">Idade Média</div></div>
+          <div class="stat-card"><div class="stat-value" style="font-size:1rem;">${stats.tempoMaisComum}</div><div class="stat-label">Tempo Mais Comum</div></div>
+          <div class="stat-card"><div class="stat-value">${stats.aquecimento_sempre_pct}%</div><div class="stat-label">Aquecem Sempre</div></div>
+          <div class="stat-card"><div class="stat-value">${stats.lesao_sim_pct}%</div><div class="stat-label">Já Tiveram Lesão</div></div>
+          <div class="stat-card"><div class="stat-value">${stats.fisio_sim_pct}%</div><div class="stat-label">Querem Fisioterapia</div></div>
+          <div class="stat-card"><div class="stat-value" style="font-size:1rem;">"${stats.cuidadoMaisVotado}"</div><div class="stat-label">Cuidado Mais Votado</div></div>
+          <div class="stat-card"><div class="stat-value" style="font-size:1rem;">"${stats.fatorLegPressMaisVotado}"</div><div class="stat-label">Fator Leg Press Mais Votado</div></div>
+        `;
+
+        // 2. Pega a lista de respostas
+        const resRes = await fetch(`${API}/respostas`);
+        const { data } = await resRes.json();
+        
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#666;">Nenhuma resposta ainda.</td></tr>';
+          return;
+        }
+
+        data.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${r.nome}</strong></td>
+            <td>${r.idade || '—'}</td>
+            <td>${r.tempo || '—'}</td>
+            <td class="${r.q1_aquecimento === 'Sempre' ? 'tag-sim' : 'tag-nao'}">${r.q1_aquecimento || '—'}</td>
+            <td class="${r.q2_lesao_anterior === 'Sim' ? 'tag-sim' : 'tag-nao'}">${r.q2_lesao_anterior || '—'}</td>
+            <td class="${r.q3_orientacao_profissional === 'Sim' ? 'tag-sim' : 'tag-nao'}">${r.q3_orientacao_profissional || '—'}</td>
+            <td class="${r.q4_estalos_travamentos === 'Sim' ? 'tag-sim' : 'tag-nao'}">${r.q4_estalos_travamentos || '—'}</td>
+            <td>${r.q5_cuidado_importante || '—'}</td>
+            <td>${r.q6_fator_legpress || '—'}</td>
+            <td class="${r.q7_orientacao_fisio === 'Sim' ? 'tag-sim' : 'tag-nao'}">${r.q7_orientacao_fisio || '—'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (error) {
+        statsDiv.innerHTML = `<p style="color:#ff5050; text-align:center;">Erro ao carregar dados. Verifique se o terminal do servidor está aberto.<br>${error.message}</p>`;
+        tbody.innerHTML = '<tr><td colspan="10" style="color:#ff5050; text-align:center;">Falha na conexão.</td></tr>';
+      }
+    }
+
+    carregarDados();
+  </script>
+</body>
+</html>
